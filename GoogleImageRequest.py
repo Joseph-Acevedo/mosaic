@@ -8,7 +8,7 @@ from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
 
 
-TEMPLATE = "https://www.google.com/search?q={}&safe=strict&tbm=isch"
+TEMPLATE = "https://www.google.com/search?q={}&safe=strict&tbm=isch&sclient=img"
 
 buffer_size = 1024          # in bytes
 
@@ -39,6 +39,9 @@ def get_images(token, n_threads):
     if response.status_code != 200:
         print(f"Bad return code! {response.status_code}")
         exit()
+
+    print(response.text )
+    exit()
 
     data = response.text
 

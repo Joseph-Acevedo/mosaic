@@ -14,7 +14,7 @@ class ImageRequest:
         # Encodes the query in a url-safe way
         token = '+'.join(token.split(" "))
         self.req_data = {
-            'key': "",
+            'key': "21347790-8576d8bf87e1821d2214055a7",
             'q': token
         }
 
