@@ -2,6 +2,8 @@ import threading
 import cv2
 import random
 import numpy as np
+from time import sleep
+
 import matplotlib.pyplot as plt
 from matplotlib.widgets import TextBox
 from ImageRequest import ImageRequest
@@ -14,8 +16,11 @@ class Mosaic:
     FIG_HEIGHT_IN = 8
     FIG_WIDTH_IN = 10
 
-    IMAGES_WIDE = 120
-    IMAGES_TALL = 80
+    MAX_IMAGES_WIDE = 240
+    MAX_IMAGES_TALL = 160
+
+    # weights for the tinge, original percent, glass percent
+    IMG_TINGE_WEIGHTS = (0.4, 0.6)
 
     def __init__(self):
         plt.ion()
@@ -24,12 +29,15 @@ class Mosaic:
         self.curr_width = 1
         self.curr_height = 1
 
+        # define max dimensions of the image
+        self.img_imgs = [[np.full((100, 100, 3), (0,0,255), np.uint8)] * self.MAX_IMAGES_WIDE] * self.MAX_IMAGES_TALL
+
         self.image_thread = ImageRequest()
         self.stream = cv2.VideoCapture(0)
 
         if not self.stream.isOpened():
             print("[ERROR] Couldn't open video stream, quitting")
-            exit()   
+            exit() 
 
         self.load_questions()
         self.camera_loop()
@@ -44,11 +52,12 @@ class Mosaic:
 
 
     def submit_answer(self, text):
-        print(text)
         self.text_box.text = ""
         self.curr_width += 1
         self.curr_height += 1
         self.curr_question = self.questions[int(random.random() * len(self.questions))]
+        sleep(0.2)
+        
         
     def camera_loop(self):
         fig1, ax1 = plt.subplots(figsize=(self.FIG_WIDTH_IN, self.FIG_HEIGHT_IN))
@@ -76,7 +85,17 @@ class Mosaic:
             fig1.canvas.flush_events()
         
     def process_frame(self, frame):
-        return cv2.resize(frame, (self.curr_width, self.curr_height))
+        for x in range(self.curr_width):
+            for y in range(self.curr_height):
+                continue
+
+        return cv2.resize(frame, (self.MAX_IMAGES_WIDE, self.MAX_IMAGES_TALL))
+
+    def tinge_img(self, img, rgb):
+        # rgb must be a 3-tuple
+        glass = np.full(img.shape, rgb, np.uint8)
+        return cv2.addWeighted(img, self.IMG_TINGE_WEIGHTS[0], glass, self.IMG_TINGE_WEIGHTS[1], 0)
+
 
 if __name__ == "__main__":
     Mosaic()
