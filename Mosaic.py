@@ -28,8 +28,8 @@ class Mosaic:
         plt.ion()
         plt.rcParams['toolbar'] = 'None'
 
-        self.curr_width = 1
-        self.curr_height = 1
+        self.curr_width = 3
+        self.curr_height = 3
 
         # define max dimensions of the image
         self.img_imgs = np.full( (self.MAX_IMAGES_WIDE, self.MAX_IMAGES_TALL, 100, 100, 3), 127, np.uint8)
@@ -48,21 +48,31 @@ class Mosaic:
         self.camera_loop()
 
     def load_questions(self):
-        self.questions = []
+        lines = []
         with open("questions.txt", encoding="utf8") as f:
-            self.questions = f.readlines()
-
-        self.curr_question = self.questions[int(random.random() * len(self.questions))]
+            lines = f.readlines()
+        self.questions = {question: False for question in lines}
+        self.set_unasked_question()
         print(self.curr_question)
+
+    def set_unasked_question(self):
+        keys = self.questions.keys()
+        unasked = [q for q in keys if not self.questions[q]]
+        if len(unasked) == 0:
+            print("Out of questions! Exiting!")
+            exit()
+        else:
+            self.curr_question = unasked[int(random.random() * len(unasked))]
+            self.questions[self.curr_question] = True
 
     def submit_answer(self, text):
         self.text_box.text = ""
         self.curr_width += 1
         self.curr_height += 1
         self.n_free_imgs += self.curr_width + self.curr_height - 1
-        self.curr_question = self.questions[int(random.random() * len(self.questions))]
+        self.set_unasked_question()
 
-        img_locs = self.generate_img_locs(int(self.n_free_imgs / 2))
+        img_locs = self.generate_img_locs(int(self.n_free_imgs - (self.curr_width*self.curr_height) / 2))
         get_images(text, self.img_imgs, img_locs)
         
     def generate_img_locs(self, n_imgs):
