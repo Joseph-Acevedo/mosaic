@@ -1,3 +1,6 @@
 requests>=2.0.0
 matplotlib>=3.0.0
 numpy>=1.18.0
+cv2>=4.0.0
+bs4>=4.0.0
+pillow>=7.0.0
