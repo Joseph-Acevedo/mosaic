@@ -4,8 +4,6 @@ from io import BytesIO
 import cv2
 from PIL import Image
 import numpy as np
-import random
-from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -47,7 +45,7 @@ template: the url template to use for requesting images, must be formattable (q=
 def get_images(token, img_dest, img_locs, template=BING_TEMPLATE):
     response = requests.get(template.format(token))
     if response.status_code != 200:
-        print(f"Bad return code! {response.status_code}")
+        print(f"Couldn't connect to web server! Code {response.status_code}")
         exit()
 
     data = response.text
@@ -79,18 +77,4 @@ def get_images(token, img_dest, img_locs, template=BING_TEMPLATE):
             img_dest[coord[0], coord[1]] = result[0]
 
     return img_dest
-
-
-
-"""
-n_imgs = 10
-img_locs = []
-for i in range(n_imgs):
-    img_locs.append( (int(10*random.random()), int(10*random.random())) )
-img_dest = [ [None]*10 ]*10
-
-get_images("cars bars", img_dest, img_locs)
-print(img_dest)
-"""
-
 

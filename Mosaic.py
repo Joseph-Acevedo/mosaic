@@ -20,6 +20,7 @@ class Mosaic:
         self.img_imgs = np.full( (const.MAX_IMAGES_WIDE, const.MAX_IMAGES_TALL, 100, 100, 3), 127, np.uint8)
         self.free_imgs = np.zeros((const.MAX_IMAGES_TALL, const.MAX_IMAGES_WIDE))
         self.n_free_imgs = self.curr_width + self.curr_height - 1
+        self.continue_looping = True
 
         self.stream = cv2.VideoCapture(0)
 
@@ -34,6 +35,8 @@ class Mosaic:
         lines = []
         with open(const.QUESTIONS_FILENAME, encoding="utf8") as f:
             lines = f.readlines()
+
+        lines = random.sample(lines, const.NUM_QUESTIONS_PER_RUN)
         self.questions = {question: False for question in lines}
         self.set_unasked_question()
 
@@ -41,11 +44,12 @@ class Mosaic:
         keys = self.questions.keys()
         unasked = [q for q in keys if not self.questions[q]]
         if len(unasked) == 0:
-            print("Out of questions! Exiting!")
-            exit()
+            self.continue_looping = False
         else:
             self.curr_question = unasked[int(random.random() * len(unasked))]
             self.questions[self.curr_question] = True
+            # opecv can't display newlines so it would append an extra question mark if left on
+            self.curr_question = self.curr_question.strip('\n')
 
     def submit_answer(self, text):
         self.curr_width += 1
@@ -74,7 +78,7 @@ class Mosaic:
         rval, frame = self.stream.read()
         self.user_text = ""
 
-        while rval:
+        while rval and self.continue_looping:
             rval, frame = self.stream.read()
 
             frame = self.process_frame(frame)
@@ -84,6 +88,27 @@ class Mosaic:
             if cv2.getWindowProperty(const.PROJECT_NAME, cv2.WND_PROP_VISIBLE) < 1:
                 break
 
+        rval, frame = self.stream.read()
+        frame = self.process_frame(frame, draw_interface=False)
+        cv2.imwrite("mosaic_of_you.jpg", frame)
+
+
+        for sec in range(const.END_SLEEP_SECS):
+            text_width, text_height = cv2.getTextSize("Mosaic saved, exiting in {}...".format(const.END_SLEEP_SECS - sec), 
+                                                      cv2.FONT_HERSHEY_SIMPLEX, 
+                                                      3*const.TEXT_SCALE, 
+                                                      2*const.TEXT_THICKNESS)[0]
+            img = cv2.putText(np.copy(frame),
+                             "Mosaic saved, exiting in {}...".format(const.END_SLEEP_SECS - sec), 
+                             (const.LEFT_BORDER + int(const.IMAGE_WIDTH / 2 - text_width / 2) , const.TOP_BORDER + const.IMAGE_HEIGHT + 2*text_height),
+                             cv2.FONT_HERSHEY_SIMPLEX,
+                             3*const.TEXT_SCALE,
+                             const.TEXT_COLOR,
+                             2*const.TEXT_THICKNESS)
+            cv2.imshow(const.PROJECT_NAME, img)
+            cv2.waitKey(1)
+            sleep(1)
+                
         self.stream.release()
         cv2.destroyAllWindows()
 
@@ -105,7 +130,7 @@ class Mosaic:
             self.user_text += ' '
         return 0
         
-    def process_frame(self, frame):
+    def process_frame(self, frame, draw_interface=True):
         tinged_imgs = [ ]
         frame = cv2.resize(frame, (self.curr_width, self.curr_height))
         for row in range(self.curr_width):
@@ -119,13 +144,14 @@ class Mosaic:
         concatted_frame = cv2.resize(cv2.vconcat([cv2.hconcat(list_h)
                         for list_h in tinged_imgs]), (const.IMAGE_WIDTH, const.IMAGE_HEIGHT))
                     
-        concatted_frame = cv2.copyMakeBorder(concatted_frame, 
+        img = cv2.copyMakeBorder(concatted_frame, 
                                              const.TOP_BORDER, 
                                              const.BOTTOM_BORDER, 
                                              const.LEFT_BORDER, 
                                              const.RIGHT_BORDER, 
                                              cv2.BORDER_CONSTANT)
-        img = self.draw_user_interface(concatted_frame)
+        if draw_interface:
+            img = self.draw_user_interface(img)
 
         return img
 
@@ -139,7 +165,6 @@ class Mosaic:
                           const.TEXT_COLOR,
                           const.TEXT_THICKNESS)
 
-        # 808pxls for longest question, curr_width is 640
         img = cv2.rectangle(img,
                             const.TEXT_BOX_UL,
                             const.TEXT_BOX_LR,

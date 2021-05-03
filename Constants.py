@@ -1,10 +1,9 @@
-PROJECT_NAME = "You, a Mosaic of Concepts"
-
-FIG_HEIGHT_IN = 8
-FIG_WIDTH_IN = 10
-
+### DISPLAY CONSTANTS ###
 MAX_IMAGES_WIDE = 240
 MAX_IMAGES_TALL = 160
+
+START_WIDTH = 3
+START_HEIGHT = 3
 
 IMAGE_WIDTH = 600
 IMAGE_HEIGHT = 450
@@ -14,7 +13,10 @@ LEFT_BORDER = 105
 RIGHT_BORDER = 105
 BOTTOM_BORDER = 100
 
-### Text Constants ###
+IMG_TINGE_WEIGHTS = (0.2, 0.8)      # weights for the tinge, original percent, glass percent
+
+
+### TEXT I/O CONSTANTS ###
 TEXT_COLOR = (255, 255, 255)
 TEXT_SCALE = 0.5
 TEXT_THICKNESS = 1
@@ -29,18 +31,19 @@ USER_TEXT_YOFFSET = int((TEXT_BOX_LR[1] - TEXT_BOX_UL[1]) / 2 - TEXT_HEIGHT / 2)
 USER_TEXT_SCALE = 1
 
 
-FREE_IMG = 0
-
-# weights for the tinge, original percent, glass percent
-IMG_TINGE_WEIGHTS = (0.2, 0.8)
-
-START_WIDTH = 3
-START_HEIGHT = 3
-
-QUESTIONS_FILENAME = "questions.txt"
-
+### KEY PRESS CONSTANTS ###
 KEY_PROCESS_QUIT = -1
 KEY_PROCESS_ESC = 27
 KEY_PROCESS_CR = 13
 KEY_PROCESS_LF = 10
 KEY_PROCESS_BS = 8
+
+
+### MISC CONSTANTS ###
+PROJECT_NAME = "You, a Mosaic of Concepts"
+QUESTIONS_FILENAME = "questions.txt"
+NUM_QUESTIONS_PER_RUN = 1
+END_SLEEP_SECS = 5
+FREE_IMG = 0
+
+
