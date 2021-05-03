@@ -1,3 +1,10 @@
+"""
+Author: Joseph Acevedo
+Project: You, a Mosaic of Concepts
+File: Constants.py
+Purpose: a static file of constants used throughout the project
+"""
+
 ### DISPLAY CONSTANTS ###
 MAX_IMAGES_WIDE = 240
 MAX_IMAGES_TALL = 160

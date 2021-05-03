@@ -1,3 +1,12 @@
+"""
+Author: Joseph Acevedo
+Project: You, a Mosaic of Concepts
+File: ImageRequester.py
+Purpose: a call to get_images will populate the given 2-D array with images from the
+    internet based on the search token given. Multiple threads are used in order to 
+    utilize external I/O wait time
+"""
+
 from bs4 import BeautifulSoup
 import requests
 from io import BytesIO
@@ -11,6 +20,9 @@ GOOGLE_TEMPLATE = "https://www.google.com/search?q={}&safe=strict&tbm=isch&sclie
 BING_TEMPLATE = "https://www.bing.com/images/search?q={}&form=HDRSC3&first=1&tsc=ImageBasicHover"
 
 
+"""
+Simple string parsing to grab a url form an HTML img tag
+"""
 def get_url_from_tag(tag):
     components = str(tag).split(" ")
     src = ""

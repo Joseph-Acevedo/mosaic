@@ -1,3 +1,12 @@
+"""
+Author: Joseph Acevedo
+Project: You, a Mosaic of Concepts
+File: Mosaic.py
+Purpose: Reads images from the default webcam and processes them to create a mosaic
+    that changes resolution as questions are answered by the user, populating the
+    cells of the image with images from the internet
+"""
+
 import threading
 import cv2
 import random
@@ -31,6 +40,10 @@ class Mosaic:
         self.load_questions()
         self.camera_loop()
 
+    """
+    Reads the specified questions.txt file and saves a subset for use in the program. Sets the 
+    first question
+    """
     def load_questions(self):
         lines = []
         with open(const.QUESTIONS_FILENAME, encoding="utf8") as f:
@@ -40,6 +53,10 @@ class Mosaic:
         self.questions = {question: False for question in lines}
         self.set_unasked_question()
 
+    """
+    Randomly chooses an unasked question from the list of questions. If there are no more questions
+    to ask then it initializes the program exiting
+    """
     def set_unasked_question(self):
         keys = self.questions.keys()
         unasked = [q for q in keys if not self.questions[q]]
@@ -51,6 +68,10 @@ class Mosaic:
             # opecv can't display newlines so it would append an extra question mark if left on
             self.curr_question = self.curr_question.strip('\n')
 
+    """
+    Called when the user submits an answer to a question. Increases resolution of the image, requests
+    new images based on their answer, and grabs a new, random, question
+    """
     def submit_answer(self, text):
         self.curr_width += 1
         self.curr_height += 1
@@ -60,6 +81,10 @@ class Mosaic:
         img_locs = self.generate_img_locs(int(self.n_free_imgs - (self.curr_width * self.curr_height) / 2))
         get_images(text, self.img_imgs, img_locs)
         
+    """
+    Generates a list of random, unoccupied locations in the image array. If there aren't enough locations 
+    in the array for the requested images will give a shorter list than expected
+    """
     def generate_img_locs(self, n_imgs):
         locs = []
         row, col = 0, 0
@@ -74,6 +99,10 @@ class Mosaic:
             self.n_free_imgs -= 1
         return locs
 
+    """
+    The main camera loop. Grabs frames from the camera and processes them. Once the program is exiting
+    it will save the mosaic to file
+    """
     def camera_loop(self):
         rval, frame = self.stream.read()
         self.user_text = ""
@@ -112,6 +141,9 @@ class Mosaic:
         self.stream.release()
         cv2.destroyAllWindows()
 
+    """
+    Handles the user's key presses in order to simulate a text input field, as well as ESC as an exit command
+    """
     def process_key_event(self, key):
         # Take least significant byte
         key = key & 0xFF
@@ -129,7 +161,11 @@ class Mosaic:
         elif chr(key) == ' ':
             self.user_text += ' '
         return 0
-        
+
+    """
+    Processes a frame from the camera. Combines the sub images and tints them, resizes it, then adds the 
+    borders and text
+    """
     def process_frame(self, frame, draw_interface=True):
         tinged_imgs = [ ]
         frame = cv2.resize(frame, (self.curr_width, self.curr_height))
@@ -155,6 +191,9 @@ class Mosaic:
 
         return img
 
+    """
+    Draws the question and user's text input on the frame
+    """
     def draw_user_interface(self, img):
         text_width, text_height = cv2.getTextSize(self.curr_question, cv2.FONT_HERSHEY_SIMPLEX, const.TEXT_SCALE, const.TEXT_THICKNESS)[0]
         img = cv2.putText(img,
@@ -182,6 +221,9 @@ class Mosaic:
 
         return img
 
+    """
+    Tinges an image the given rgb value
+    """
     def tinge_img(self, img, rgb):
         # rgb must be a 3-tuple
         glass = np.full(img.shape, rgb, np.uint8)
